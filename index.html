@@ -1,0 +1,243 @@
+<html>
+
+<head>
+    <title>Satellite Image Map of Lybia Flooding</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src='https://unpkg.com/maplibre-gl@3.1.0/dist/maplibre-gl.js'></script>
+    <link href='https://unpkg.com/maplibre-gl@3.1.0/dist/maplibre-gl.css' rel='stylesheet' />
+    <link href="maplibre-gl-compare.css" rel='stylesheet' />
+    <script src="maplibre-gl-compare.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        #map {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <style>
+        body {
+            overflow: hidden;
+        }
+
+        body * {
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        .map {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 100%;
+        }
+
+        .map-overlay {
+            font: bold 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+            position: absolute;
+            width: 250px;
+            bottom: 20px;
+            left: 0;
+            padding: 10px;
+        }
+
+        .map-overlay .map-overlay-inner {
+            background-color: #fff;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+            border-radius: 3px;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+
+        .map-overlay label {
+            display: block;
+            margin: 0 0 0px;
+            font-size: 12px;
+            top: 100px;
+            left: 10px;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .map-overlay input {
+            background-color: transparent;
+            display: inline-block;
+            width: 100%;
+            position: relative;
+            margin: 0;
+            cursor: ew-resize;
+        }
+
+        .corner-text {
+            position: fixed;
+            top: 0;
+            padding: 10px;
+            font-size: 14px;
+            z-index: 1;
+            /* put text above other elements */
+            color: white;
+            /* make sure text is visible on top of other elements */
+            background-color: rgba(0, 0, 0, 0.5);
+            /* semi-transparent background for better visibility */
+        }
+
+        #left-corner {
+            left: 0;
+        }
+
+        #right-corner {
+            right: 0;
+        }
+    </style>
+    <div id="comparison-container">
+        <div id="left-corner" class="corner-text">2023/07/01</div>
+        <div id="right-corner" class="corner-text">2023/09/13</div>
+        <div id="before" class="map"></div>
+        <div id="after" class="map"></div>
+    </div>
+    <div class="map-overlay top">
+        <div class="map-overlay-inner">
+            <label>衛星画像 不透明度: <span id="slider-opacity-value">100%</span></label>
+            <input id="slider-opacity" type="range" min="0" max="100" step="0" value="100">
+        </div>
+    </div>
+    <script>
+        // マップを初期化
+        const beforeMap = new maplibregl.Map({
+            container: 'before',
+            style: 'https://tile2.openstreetmap.jp/styles/osm-bright/style.json',
+            hash: true,
+            zoom: 13.79,
+            center: [22.63495, 32.76115],
+            pitch: 0,
+            bearing: 0,
+            attributionControl: false,
+        });
+
+        beforeMap.on('load', () => {
+            // 衛星画像ソース
+            beforeMap.addSource("maxar-2023-07-01", {
+                type: 'raster',
+                tiles: [
+                    'https://tiles.openaerialmap.org/6502b20a0906de000167e691/0/6502b20a0906de000167e692/{z}/{x}/{y}',
+                ],
+                attribution: '<a href="https://map.openaerialmap.org/#/22.613983154296875,32.81468985950555,12/square/1221022202123/6502b83e0906de000167e696?_k=9dl6ds" target="_blank">© Maxar Technologies Open Data Program, marged by Yerçizenler</a>',
+                tileSize: 512,
+                // scheme: "tms"
+            });
+
+            // 衛星画像レイヤ
+            beforeMap.addLayer({
+                id: 'maxar-2023-07-01-tiles',
+                type: 'raster',
+                source: 'maxar-2023-07-01',
+                minzoom: 9,
+                maxzoom: 22
+            });
+
+        });
+
+        // スケール表示
+        beforeMap.addControl(new maplibregl.ScaleControl({
+            maxWidth: 200,
+            unit: 'metric'
+        }));
+
+        // マップを初期化
+        const afterMap = new maplibregl.Map({
+            container: 'after',
+            style: 'https://tile2.openstreetmap.jp/styles/osm-bright/style.json',
+            hash: true,
+            zoom: 13.79,
+            center: [22.63495, 32.76115],
+            pitch: 0,
+            bearing: 0,
+            attributionControl: false,
+        });
+
+        // マップのロードが完了したら、COGソースを生成しレイヤーに追加
+        afterMap.on('load', () => {
+            // 衛星画像ソース
+            afterMap.addSource("maxar-2023-09-13", {
+                type: 'raster',
+                tiles: [
+                    'https://tiles.openaerialmap.org/6502980d0906de000167e681/0/6502980d0906de000167e682/{z}/{x}/{y}',
+                ],
+                attribution: '<a href="https://map.openaerialmap.org/#/22.613983154296875,32.81468985950555,12/square/1221022202123/6502b83e0906de000167e696?_k=9dl6ds" target="_blank">© Maxar Technologies Open Data Program, marged by Yerçizenler</a>',
+                tileSize: 512,
+                // scheme: "tms"
+            });
+
+            // 衛星画像レイヤ
+            afterMap.addLayer({
+                id: 'maxar-2023-09-13-tiles',
+                type: 'raster',
+                source: 'maxar-2023-09-13',
+                minzoom: 9,
+                maxzoom: 22
+            });
+
+        });
+
+        // スライダーで衛星画像の不透明度を制御
+        const sliderOpactiy = document.getElementById('slider-opacity');
+        const sliderOpactiyValue = document.getElementById('slider-opacity-value');
+
+        sliderOpactiy.addEventListener('input', (e) => {
+            beforeMap.setPaintProperty(
+                'maxar-2023-07-01-tiles',
+                'raster-opacity',
+                parseInt(e.target.value, 10) / 100
+            );
+            afterMap.setPaintProperty(
+                'maxar-2023-09-13-tiles',
+                'raster-opacity',
+                parseInt(e.target.value, 10) / 100
+            );
+            sliderOpactiyValue.textContent = e.target.value + '%';
+        });
+
+        // Attributionを折りたたみ表示
+        afterMap.addControl(new maplibregl.AttributionControl({
+            compact: true,
+            customAttribution: '（<a href="https://twitter.com/shi__works" target="_blank">Twitter</a> | <a href="" target="_blank">Github</a>） '
+        }));
+
+        // フルスクリーンモードのオンオフ
+        afterMap.addControl(new maplibregl.FullscreenControl(), 'bottom-right');
+
+        // 現在位置表示
+        afterMap.addControl(new maplibregl.GeolocateControl({
+            positionOptions: {
+                enableHighAccuracy: false
+            },
+            fitBoundsOptions: { maxZoom: 18 },
+            trackUserLocation: true,
+            showUserLocation: true
+        }), 'bottom-right');
+
+        // ズーム・回転
+        afterMap.addControl(new maplibregl.NavigationControl(), 'bottom-right');
+
+        var container = "#comparison-container";
+        var map = new maplibregl.Compare(beforeMap, afterMap, container, {
+        });
+
+        map.showTileBoundaries = false;
+
+    </script>
+</body>
+
+</html>
