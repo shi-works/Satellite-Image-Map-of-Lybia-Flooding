@@ -100,6 +100,39 @@
         #right-corner {
             right: 0;
         }
+
+        .legend {
+            background-color: #fff;
+            border-radius: 3px;
+            bottom: 110px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.10);
+            font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+            padding: 10px;
+            position: absolute;
+            left: 10px;
+            z-index: 1;
+            line-height: 16px;
+            height: 80px;
+        }
+
+        .legend h4 {
+            margin: 0 0 10px;
+        }
+
+        .legend div span {
+            border-radius: 50%;
+            display: inline-block;
+            height: 15px;
+            margin-right: 10px;
+            width: 15px;
+            color: orangered
+        }
+
+        .circle {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
     </style>
     <div id="comparison-container">
         <div id="left-corner" class="corner-text">2023/07/01</div>
@@ -112,6 +145,18 @@
             <label>衛星画像 不透明度: <span id="slider-opacity-value">100%</span></label>
             <input id="slider-opacity" type="range" min="0" max="100" step="0" value="100">
         </div>
+    </div>
+    <div id='legend' class='legend'>
+        <h4>建物被害評価</h4>
+        <div class="circle" style='background-color: rgb(255, 0, 0); border: 1px solid black; display: inline-block;'>
+        </div>
+        <span style="display: inline-block; margin-left: 5px;">倒壊</span><br>
+        <div class="circle" style='background-color: rgb(255, 255, 0); border: 1px solid black; display: inline-block;'>
+        </div>
+        <span style="display: inline-block; margin-left: 5px;">損傷あり</span><br>
+        <div class="circle" style='background-color: rgb(0, 255, 0); border: 1px solid black; display: inline-block;'>
+        </div>
+        <span style="display: inline-block; margin-left: 5px;">おそらく損傷あり</span><br>
     </div>
     <script>
         // マップを初期化
@@ -145,6 +190,40 @@
                 source: 'maxar-2023-07-01',
                 minzoom: 9,
                 maxzoom: 22
+            });
+
+            // 建物被害評価ソース
+            beforeMap.addSource('building-damage-assessment', {
+                'type': 'geojson',
+                'data': './EMSR696_AOI01_GRA_PRODUCT_builtUpP_v1.geojson',
+                cluster: false,
+                attribution: '<a href="https://rapidmapping.emergency.copernicus.eu/EMSR696/download">Copernicus Emergency Management Service, Flood in Libya</a>'
+            });
+
+            // 建物被害評価ポイントレイヤ
+            beforeMap.addLayer({
+                "id": "building-damage-assessment",
+                "source": "building-damage-assessment",
+                "type": "circle",
+                'paint': {
+                    'circle-color': [
+                        'match',
+                        ['get', 'damage_gra'],
+                        'Damaged', 'rgba(255, 255, 0, 1)',
+                        'Destroyed', 'rgba(255, 0, 0, 1)',
+                        'Possibly damaged', 'rgba(0, 255, 0, 1)',
+                        'rgba(0, 0, 0, 1)' // default color
+                    ],
+                    'circle-radius': [
+                        "interpolate",
+                        ["linear"],
+                        ["zoom"],
+                        12, 2,
+                        16, 5
+                    ],
+                    'circle-stroke-width': 1,
+                    'circle-stroke-color': 'rgba(0, 0, 0, 1)'
+                }
             });
 
         });
