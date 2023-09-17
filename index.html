@@ -268,6 +268,24 @@
                 maxzoom: 22
             });
 
+            afterMap.addSource("google-building", {
+                'type': 'geojson',
+                'data': './open_buildings_v3_polygons_your_own_wkt_polygon.geojson',
+                attribution: '<a href="https://data.humdata.org/dataset/buildings-footprint-floods-derna-libya">© Google,Libya Buildings Footprint</a>',
+            });
+
+            afterMap.addLayer({
+                'id': 'google-building-line',
+                'source': 'google-building',
+                'type': 'line',
+                "minzoom": 1,
+                "maxzoom": 23,
+                'paint': {
+                    "line-color": 'rgb(0, 0, 255)',
+                    "line-width": 1.0
+                }
+            });
+
         });
 
         // スライダーで衛星画像の不透明度を制御
@@ -291,7 +309,7 @@
         // Attributionを折りたたみ表示
         afterMap.addControl(new maplibregl.AttributionControl({
             compact: true,
-            customAttribution: '<a href="https://twitter.com/shi__works" target="_blank">Twitter</a> | <a href="https://github.com/shi-works/Satellite-Image-Map-of-Lybia-Flooding" target="_blank">Github</a> | <a href="https://rapidmapping.emergency.copernicus.eu/EMSR696/download">Copernicus Emergency Management Service, Flood in Libya</a>） '
+            customAttribution: '<a href="https://twitter.com/shi__works" target="_blank">Twitter</a> | <a href="https://github.com/shi-works/Satellite-Image-Map-of-Lybia-Flooding" target="_blank">Github</a> | <a href="https://rapidmapping.emergency.copernicus.eu/EMSR696/download">© Copernicus Emergency Management Service, Flood in Libya</a>） '
         }));
 
         // フルスクリーンモードのオンオフ
